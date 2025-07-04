@@ -1,3 +1,4 @@
+import React from 'react';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -9,6 +10,11 @@ import {
     Tooltip,
     Legend,
     TimeScale,
+    ChartOptions,
+    TooltipItem,
+    ChartData,
+    Scale,
+    CoreScaleOptions,
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 
@@ -23,18 +29,23 @@ ChartJS.register(
     TimeScale
 );
 
-type PriceChartProps = {
+interface PriceChartProps {
     data: [number, number][];
     currency: string;
-    theme: string;
-};
+    theme: 'dark' | 'light';
+}
 
-const PriceChart = ({ data, currency, theme }: PriceChartProps) => {
-    const chartData = {
+interface ChartDataPoint {
+    x: Date;
+    y: number;
+}
+
+const PriceChart: React.FC<PriceChartProps> = ({ data, currency, theme }) => {
+    const chartData: ChartData<'line', ChartDataPoint[]> = {
         datasets: [
             {
                 label: 'Price',
-                data: data.map(([timestamp, price]) => ({
+                data: data.map(([timestamp, price]): ChartDataPoint => ({
                     x: new Date(timestamp),
                     y: price,
                 })),
@@ -48,14 +59,14 @@ const PriceChart = ({ data, currency, theme }: PriceChartProps) => {
         ],
     };
 
-    const options = {
+    const options: ChartOptions<'line'> = {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
             x: {
-                type: 'time' as const,
+                type: 'time',
                 time: {
-                    unit: 'day' as const,
+                    unit: 'day',
                     tooltipFormat: 'PP',
                 },
                 grid: {
@@ -71,13 +82,15 @@ const PriceChart = ({ data, currency, theme }: PriceChartProps) => {
                 },
                 ticks: {
                     color: theme === 'dark' ? '#9ca3af' : '#6b7280',
-                    callback: (value: number) => {
+                    callback: function(
+                        tickValue: number | string,
+                    ): string | null {
                         return new Intl.NumberFormat('en-US', {
                             style: 'currency',
                             currency: currency.toUpperCase(),
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 8,
-                        }).format(value);
+                        }).format(Number(tickValue));
                     },
                 },
             },
@@ -87,10 +100,10 @@ const PriceChart = ({ data, currency, theme }: PriceChartProps) => {
                 display: false,
             },
             tooltip: {
-                mode: 'index' as const,
+                mode: 'index',
                 intersect: false,
                 callbacks: {
-                    label: (context: any) => {
+                    label: (context: TooltipItem<'line'>) => {
                         let label = context.dataset.label || '';
                         if (label) {
                             label += ': ';
@@ -109,7 +122,7 @@ const PriceChart = ({ data, currency, theme }: PriceChartProps) => {
             },
         },
         interaction: {
-            mode: 'nearest' as const,
+            mode: 'nearest',
             intersect: false,
         },
     };

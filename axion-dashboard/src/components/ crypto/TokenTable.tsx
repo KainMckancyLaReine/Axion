@@ -1,18 +1,19 @@
+import React from 'react';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { useCrypto } from '../../context/CryptoContext';
 import SparklineChart from '../charts/SparklineChart';
 import { Cryptocurrency } from '../../types/crypto';
 
-type TokenTableProps = {
+interface TokenTableProps {
     cryptocurrencies: Cryptocurrency[];
     currency: string;
     favorites: string[];
-};
+}
 
-const TokenTable = ({ cryptocurrencies, currency, favorites }: TokenTableProps) => {
+const TokenTable: React.FC<TokenTableProps> = ({ cryptocurrencies, currency, favorites }) => {
     const { toggleFavorite } = useCrypto();
 
-    const formatPrice = (price: number) => {
+    const formatPrice = (price: number): string => {
         if (price < 1) return price.toPrecision(4);
         return price.toLocaleString(undefined, {
             minimumFractionDigits: 2,
@@ -20,14 +21,15 @@ const TokenTable = ({ cryptocurrencies, currency, favorites }: TokenTableProps) 
         });
     };
 
-    const formatMarketCap = (cap: number) => {
+    const formatMarketCap = (cap: number): string => {
         if (cap >= 1e12) return `$${(cap / 1e12).toFixed(2)}T`;
         if (cap >= 1e9) return `$${(cap / 1e9).toFixed(2)}B`;
         if (cap >= 1e6) return `$${(cap / 1e6).toFixed(2)}M`;
         return `$${cap.toLocaleString()}`;
     };
 
-    const getChangeColor = (value: number) => {
+    const getChangeColor = (value: number | null | undefined): string => {
+        if (!value) return 'text-gray-500';
         if (value > 0) return 'text-green-500';
         if (value < 0) return 'text-red-500';
         return 'text-gray-500';
@@ -78,6 +80,7 @@ const TokenTable = ({ cryptocurrencies, currency, favorites }: TokenTableProps) 
                                 <button
                                     onClick={() => toggleFavorite(crypto.id)}
                                     className="mr-2"
+                                    type="button"
                                 >
                                     <StarIcon
                                         className={`h-5 w-5 ${favorites.includes(crypto.id) ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-500'}`}
@@ -100,13 +103,13 @@ const TokenTable = ({ cryptocurrencies, currency, favorites }: TokenTableProps) 
                             {currency.toUpperCase()} {formatPrice(crypto.current_price)}
                         </td>
                         <td className={`px-6 py-4 whitespace-nowrap text-sm ${getChangeColor(crypto.price_change_percentage_1h_in_currency)}`}>
-                            {crypto.price_change_percentage_1h_in_currency?.toFixed(1) || '0.0'}%
+                            {crypto.price_change_percentage_1h_in_currency?.toFixed(1) ?? '0.0'}%
                         </td>
                         <td className={`px-6 py-4 whitespace-nowrap text-sm ${getChangeColor(crypto.price_change_percentage_24h_in_currency)}`}>
-                            {crypto.price_change_percentage_24h_in_currency?.toFixed(1) || '0.0'}%
+                            {crypto.price_change_percentage_24h_in_currency?.toFixed(1) ?? '0.0'}%
                         </td>
                         <td className={`px-6 py-4 whitespace-nowrap text-sm ${getChangeColor(crypto.price_change_percentage_7d_in_currency)}`}>
-                            {crypto.price_change_percentage_7d_in_currency?.toFixed(1) || '0.0'}%
+                            {crypto.price_change_percentage_7d_in_currency?.toFixed(1) ?? '0.0'}%
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             {formatMarketCap(crypto.total_volume)}
@@ -117,8 +120,8 @@ const TokenTable = ({ cryptocurrencies, currency, favorites }: TokenTableProps) 
                         <td className="px-6 py-4 whitespace-nowrap">
                             <div className="w-32 h-10">
                                 <SparklineChart
-                                    data={crypto.sparkline_in_7d?.price || []}
-                                    priceChange={crypto.price_change_percentage_7d_in_currency || 0}
+                                    data={crypto.sparkline_in_7d?.price ?? []}
+                                    priceChange={crypto.price_change_percentage_7d_in_currency ?? 0}
                                 />
                             </div>
                         </td>

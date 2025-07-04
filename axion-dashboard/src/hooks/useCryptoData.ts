@@ -1,7 +1,6 @@
-// src/hooks/useCryptoData.ts
 import { useState, useEffect, useCallback } from 'react';
 import { CoinGeckoService } from '../services/CoinGeckoService';
-import { Cryptocurrency, MarketData } from '../types/crypto';
+import type { Cryptocurrency, MarketData, CoinDetails, MarketChartData } from '../types/crypto';
 
 export const useCryptoData = (currency: string) => {
     const [cryptocurrencies, setCryptocurrencies] = useState<Cryptocurrency[]>([]);
@@ -29,7 +28,7 @@ export const useCryptoData = (currency: string) => {
         }
     }, [currency]);
 
-    const fetchCoinDetails = useCallback(async (id: string) => {
+    const fetchCoinDetails = useCallback(async (id: string): Promise<CoinDetails> => {
         setLoading(true);
         try {
             const data = await CoinGeckoService.getCoinDetails(id, currency);
@@ -42,7 +41,7 @@ export const useCryptoData = (currency: string) => {
         }
     }, [currency]);
 
-    const fetchCoinMarketChart = useCallback(async (id: string, days: number = 30) => {
+    const fetchCoinMarketChart = useCallback(async (id: string, days: number = 30): Promise<MarketChartData> => {
         try {
             const data = await CoinGeckoService.getCoinMarketChart(id, currency, days);
             return data;
@@ -53,7 +52,7 @@ export const useCryptoData = (currency: string) => {
     }, [currency]);
 
     useEffect(() => {
-        fetchData();
+        void fetchData();
     }, [fetchData]);
 
     return {
